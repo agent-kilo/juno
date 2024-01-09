@@ -14,7 +14,7 @@
   (wlr-seat-keyboard-notify-modifiers seat (wlr-keyboard :modifiers)))
 
 
-(defn- handle-keybinding [server sym]
+(defn- do-keybinding [server sym]
   (case sym
     (xkb-key :Escape)
     (do
@@ -44,7 +44,7 @@
   # TODO: keybinding overhaul
   (def handled-syms
     (if (and (contains? modifiers :alt) (= (event :state) :pressed))
-      (map (fn [sym] (handle-keybinding server sym)) syms)
+      (map (fn [sym] (do-keybinding server sym)) syms)
       (map (fn [_] false) syms)))
 
   (if-not (any? handled-syms)
