@@ -57,7 +57,7 @@
 
 
 (defn- new-toplevel [xdg-shell xdg-surface]
-  (def parent-tree (>: xdg-shell :server :scene :tree))
+  (def parent-tree (>: xdg-shell :server :scene :base :tree))
   (def scene-tree (wlr-scene-xdg-surface-create parent-tree (>: xdg-surface :toplevel :base)))
   (set (xdg-surface :data) scene-tree)
 
