@@ -15,8 +15,6 @@
 
 
 (defn- init [self]
-  (put self :listeners @{})
-
   (put self :display (display/create self))
   (put self :backend (backend/create self))
   (put self :renderer (renderer/create self))
