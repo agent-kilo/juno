@@ -8,10 +8,10 @@
 
 
 (defn- handle-keyboard-modifiers [keyboard listener data]
-  (def seat (>: keyboard :server :seat))
+  (def wlr-seat (>: keyboard :server :seat :base))
   (def wlr-keyboard (keyboard :base))
-  (wlr-seat-set-keyboard seat wlr-keyboard)
-  (wlr-seat-keyboard-notify-modifiers seat (wlr-keyboard :modifiers)))
+  (wlr-seat-set-keyboard wlr-seat wlr-keyboard)
+  (wlr-seat-keyboard-notify-modifiers wlr-seat (wlr-keyboard :modifiers)))
 
 
 (defn- do-keybinding [server sym]
