@@ -8,7 +8,7 @@
   (put self :device device)
   (put self :server (backend :server))
   (put self :listeners @{})
-  (wlr-cursor-attach-input-device (>: backend :server :cursor) device)
+  (wlr-cursor-attach-input-device (>: backend :server :cursor :base) device)
   self)
 
 

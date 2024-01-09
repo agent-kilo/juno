@@ -8,5 +8,7 @@
 
   (def server (server/create))
   (printf "%p" server)
-  (:destroy server)
-  )
+  (:start server)
+
+  (os/sigaction :int (fn [&] (:stop server)))
+  (os/sigaction :term (fn [&] (:stop server))))

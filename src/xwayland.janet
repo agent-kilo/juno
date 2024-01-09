@@ -17,7 +17,7 @@
 
 (defn- init [self server]
   # TODO: lazy-load config
-  (def wlr-xwayland (wlr-xwayland-create (server :display) (server :compositor) false))
+  (def wlr-xwayland (wlr-xwayland-create (>: server :display :base) (server :compositor) false))
 
   (put self :base wlr-xwayland)
   (put self :server server)
@@ -31,8 +31,6 @@
      (wl-signal-add (>: self :base :events.new_surface)
                     (fn [listener data]
                       (handle-new-surface self listener data))))
-
-  (os/setenv "DISPLAY" (>: self :base :display-name))
 
   self)
 

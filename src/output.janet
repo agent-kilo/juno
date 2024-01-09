@@ -6,7 +6,7 @@
 
 
 (defn- handle-output-frame [output listener data]
-  (def scene-output (wlr-scene-get-scene-output (>: output :server :scene) (output :base)))
+  (def scene-output (wlr-scene-get-scene-output (>: output :server :scene :base) (output :base)))
   (wlr-scene-output-commit scene-output)
   (wlr-scene-output-send-frame-done scene-output (clock-gettime :monotonic)))
 
@@ -23,25 +23,22 @@
   (put self :server server)
   (put self :listeners @{})
 
-  (if-not (wlr-output-init-render wlr-output (server :allocator) (server :renderer))
+  (if-not (wlr-output-init-render wlr-output (server :allocator) (>: server :renderer :base))
     (error "wlr-output-init-render failed"))
 
-  (if (wl-list-empty (wlr-output :modes))
-    (error "empty mode list for output"))
-
-  # TODO: set mode from config?
-  (def mode (wlr-output-preferred-mode wlr-output))
-  (wlr-output-set-mode wlr-output mode)
-  (wlr-output-enable wlr-output true)
-
-  (if-not (wlr-output-commit wlr-output)
-    (error "wlr-output-commit failed"))
+  (if-not (wl-list-empty (wlr-output :modes))
+    (do
+      # TODO: set mode from config?
+      (def mode (wlr-output-preferred-mode wlr-output))
+      (wlr-output-set-mode wlr-output mode)
+      (wlr-output-enable wlr-output true)
+      (if-not (wlr-output-commit wlr-output)
+        (error "wlr-output-commit failed"))))
 
   (put (self :listeners) :frame
      (wl-signal-add (>: self :base :events.frame)
                     (fn [listener data]
                       (handle-output-frame self listener data))))
-
   (put (self :listeners) :destroy
      (wl-signal-add (>: self :base :events.destroy)
                     (fn [listener data]

@@ -33,11 +33,11 @@
   (def caps @[:pointer])
   (if-not (empty? (filter |(= (>: $ :device :type) :keyboard) (backend :inputs)))
     (array/push caps :keyboard))
-  (wlr-seat-set-capabilities (server :seat) caps))
+  (wlr-seat-set-capabilities (>: server :seat :base) caps))
 
 
 (defn- init [self server]
-  (put self :base (wlr-backend-autocreate (server :display)))
+  (put self :base (wlr-backend-autocreate (>: server :display :base)))
   (put self :server server)
   (put self :listeners @{})
   (put self :outputs @[])
@@ -79,7 +79,7 @@
 
 
 (defn- remove-output [self output]
-  (remove-element (self :output) output))
+  (remove-element (self :outputs) output))
 
 
 (def- proto

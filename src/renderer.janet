@@ -10,7 +10,7 @@
   (put self :base wlr-renderer)
   (put self :server server)
 
-  (if-not (wlr-renderer-init-wl-display (self :base) (server :display))
+  (if-not (wlr-renderer-init-wl-display (self :base) (>: server :display :base))
     (error "wlr-renderer-init-wl-display failed"))
 
   self)
