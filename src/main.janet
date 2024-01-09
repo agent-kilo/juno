@@ -1,5 +1,12 @@
 (use janetland/wlr)
 
+(import ./server)
+
 (defn main [&]
+  # TODO: log level config
   (wlr-log-init :debug)
-  (wlr-log :debug "Hello there!"))
+
+  (def server (server/create))
+  (printf "%p" server)
+  (:destroy server)
+  )
