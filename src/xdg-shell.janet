@@ -40,13 +40,18 @@
   true)
 
 
+(defn- surface-set-activated [self activated]
+  (wlr-xdg-toplevel-set-activated (>: self :base :toplevel) activated))
+
+
 (def- surface-proto
   @{:map surface-map
     :unmap surface-unmap
     :destroy surface-destroy
     :request-move surface-request-move
     :request-resize surface-request-resize
-    :wants-focus surface-wants-focus})
+    :wants-focus surface-wants-focus
+    :set-activated surface-set-activated})
 
 
 (defn- new-popup [xdg-shell xdg-surface]
@@ -66,6 +71,7 @@
       :base xdg-surface
       :wlr-surface (xdg-surface :surface)
       :listeners @{}})
+  (set ((surface :wlr-surface) :data) surface)
   (table/setproto surface surface-proto)
 
   (def view (view/create surface scene-tree (xdg-shell :server)))

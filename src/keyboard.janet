@@ -26,6 +26,13 @@
       (os/spawn ["/bin/sh" "-c" "kitty"] :pd)
       true)
 
+    (xkb-key :F1)
+    (do
+      (when (> (length (server :views)) 1)
+        (def next-view ((server :views) 0))
+        (:focus next-view))
+      true)
+
     # default
     false))
 

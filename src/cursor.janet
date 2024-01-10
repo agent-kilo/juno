@@ -29,7 +29,14 @@
 (defn- init [self server]
   (put self :base (wlr-cursor-create))
   (put self :server server)
+
   (put self :mode :passthrough) # TODO
+  (put self :grabbed-view nil)
+  (put self :grab-box nil)
+  (put self :grabb-x 0)
+  (put self :grabb-y 0)
+  (put self :resize-edges [])
+
   (put self :listeners @{})
 
   # TODO: cursor config?
