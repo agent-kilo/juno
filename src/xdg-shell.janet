@@ -36,6 +36,16 @@
         (event :edges)))))
 
 
+(defn- surface-get-geometry [self]
+  (wlr-xdg-surface-get-geometry (self :base)))
+
+
+(defn- surface-move [self x y &opt width height]
+  # x & y should be handled by views
+  (if-not (or (nil? width) (nil? height))
+    (wlr-xdg-toplevel-set-size (>: self :base :toplevel) width height)))
+
+
 (defn- surface-wants-focus [self]
   true)
 
@@ -50,6 +60,7 @@
     :destroy surface-destroy
     :request-move surface-request-move
     :request-resize surface-request-resize
+    :move surface-move
     :wants-focus surface-wants-focus
     :set-activated surface-set-activated})
 

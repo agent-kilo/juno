@@ -9,7 +9,7 @@
   (def event (get-abstract-listener-data data 'wlr/wlr-seat-pointer-request-set-cursor-event))
   (def focused-client (>: seat :base :pointer-state :focused-client))
   (when (= focused-client (event :seat-client))
-    (wlr-cursor-set-surface (>: seat :server :cursor)
+    (wlr-cursor-set-surface (>: seat :server :cursor :base)
                             (event :surface)
                             (event :hotspot-x)
                             (event :hotspot-y))))
