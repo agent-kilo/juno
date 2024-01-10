@@ -40,12 +40,6 @@
 
 
 (defn- run [self]
-  (:start (self :repl))
-  (:start (self :backend))
-
-  (os/setenv "WAYLAND_DISPLAY" (>: self :display :socket))
-  (os/setenv "DISPLAY" (>: self :xwayland :base :display-name))
-
   (def wl-display (>: self :display :base))
   (def event-loop (>: self :display :event-loop))
   (def stream (>: self :display :event-loop-stream))
@@ -57,9 +51,15 @@
 
 
 (defn- start [self]
-  (ev/spawn
-   (:run self)
-   (:destroy self)))
+  (:start (self :repl))
+  (:start (self :backend))
+  # Must set there AFTER the backend is started
+  (os/setenv "WAYLAND_DISPLAY" (>: self :display :socket))
+  (os/setenv "DISPLAY" (>: self :xwayland :base :display-name))
+
+  (def sup (ev/chan))
+  (ev/go (fn [] (:run self)) nil sup)
+  sup)
 
 
 (defn stop [self]
