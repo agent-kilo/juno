@@ -15,6 +15,7 @@
      (event :delta-y)
      (event :time-msec)))
 
+
 (defn- handle-motion-absolute [cursor listener data]
   (def event (get-abstract-listener-data data 'wlr/wlr-pointer-motion-absolute-event))
   (:move cursor :absolute
@@ -23,13 +24,36 @@
      (event :y)
      (event :time-msec)))
 
+
 (defn- handle-button [cursor listener data]
+  (def event (get-abstract-listener-data data 'wlr/wlr-pointer-button-event))
+
+  (def keyboard (>: cursor :server :seat :base :keyboard-state :keyboard))
+  (def modifiers (if (nil? keyboard)
+                   @[]
+                   (wlr-keyboard-get-modifiers keyboard)))
+
+  (when (contains? modifiers :logo)
+    (case (event :state)
+      :pressed
+      (do
+        (def [view _sx _sy] (view/at (cursor :server) (>: cursor :base :x) (>: cursor :base :y)))
+        (if-not (nil? view)
+          (case (event :button)
+            (int/u64 272) (:grab view :move-view [])
+            (int/u64 273) (:grab view :resize-view [:right :bottom]))))
+      :released
+      (:reset-mode cursor))
+    (break))
+
   # TODO
   )
+
 
 (defn- handle-axis [cursor listener data]
   # TODO
   )
+
 
 (defn- handle-frame [cursor listener data]
   # TODO
@@ -43,8 +67,8 @@
   (put self :mode :passthrough)
   (put self :grabbed-view nil)
   (put self :grab-box nil)
-  (put self :grabb-x 0)
-  (put self :grabb-y 0)
+  (put self :grab-x 0)
+  (put self :grab-y 0)
   (put self :resize-edges [])
 
   (put self :listeners @{})
@@ -146,6 +170,11 @@
               (wlr-seat-pointer-notify-motion wlr-seat time sx sy))))))
 
 
+(defn- reset-mode [self]
+  (put self :mode :passthrough)
+  (put self :grabbed-view nil))
+
+
 (defn- destroy [self]
   (eachp [_ listener] (self :listeners)
     (wl-signal-remove listener)))
@@ -153,6 +182,7 @@
 
 (def- proto
   @{:move move
+    :reset-mode reset-mode
     :destroy destroy})
 
 

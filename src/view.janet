@@ -31,7 +31,7 @@
       (def border-y (+ (self :y) (geo-box :y)
                        (if (contains? edges :bottom) (geo-box :height) 0)))
       (put cursor :grab-x (- (>: cursor :base :x) border-x))
-      (put server :grab-y (- (>: cursor :base :y) border-y))
+      (put cursor :grab-y (- (>: cursor :base :y) border-y))
       (+= (geo-box :x) (self :x))
       (+= (geo-box :y) (self :y))
       (put cursor :grab-box geo-box)

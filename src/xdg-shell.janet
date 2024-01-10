@@ -60,6 +60,7 @@
     :destroy surface-destroy
     :request-move surface-request-move
     :request-resize surface-request-resize
+    :get-geometry surface-get-geometry
     :move surface-move
     :wants-focus surface-wants-focus
     :set-activated surface-set-activated})

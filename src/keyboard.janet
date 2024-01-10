@@ -50,7 +50,7 @@
 
   # TODO: keybinding overhaul
   (def handled-syms
-    (if (and (contains? modifiers :alt) (= (event :state) :pressed))
+    (if (and (contains? modifiers :logo) (= (event :state) :pressed))
       (map (fn [sym] (do-keybinding server sym)) syms)
       (map (fn [_] false) syms)))
 
