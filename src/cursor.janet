@@ -69,8 +69,7 @@
 
 
 (defn- handle-frame [cursor listener data]
-  # TODO
-  )
+  (wlr-seat-pointer-notify-frame (>: cursor :server :seat :base)))
 
 
 (defn- init [self server]
