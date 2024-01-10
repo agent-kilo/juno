@@ -6,6 +6,12 @@
 
 (use ./util)
 
+#
+# Data fields used here:
+#   xdg-surface data -> wlr-scene-tree object
+#   wlr-surface data -> juno surface object
+#
+
 
 # Placeholders. Xdg surfaces don't really need these.
 (defn- surface-map [self])

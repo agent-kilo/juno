@@ -46,8 +46,21 @@
       (:reset-mode cursor))
     (break))
 
-  # TODO
-  )
+  (def btn-serial
+    (wlr-seat-pointer-notify-button (>: cursor :server :seat :base)
+                                    (event :time-msec)
+                                    (event :button)
+                                    (event :state)))
+  (put cursor :last-button-event [btn-serial (event :state) (event :button)])
+
+  (if (= (event :state) :released)
+    (:reset-mode cursor)
+    (let [[view _sx _sy] (view/at (cursor :server)
+                                  (>: cursor :base :x)
+                                  (>: cursor :base :y))]
+      (when (nil? view) (break))
+      (when (:wants-focus (view :surface))
+        (:focus view)))))
 
 
 (defn- handle-axis [cursor listener data]
@@ -162,11 +175,14 @@
 
     :passthrough
     (do (def wlr-seat (>: self :server :seat :base))
-        (def [view sx sy] (view/at (self :server) (>: self :base :x) (>: self :base :y)))
-        (if (nil? view)
+        (def [wlr-surface sx sy]
+          (:get-surface-at (>: self :server :scene)
+                           (>: self :base :x)
+                           (>: self :base :y)))
+        (if (nil? wlr-surface)
           (do (wlr-xcursor-manager-set-cursor-image (self :xcursor-manager) "left_ptr" (self :base))
               (wlr-seat-pointer-clear-focus wlr-seat))
-          (do (wlr-seat-pointer-notify-enter wlr-seat (>: view :surface :wlr-surface) sx sy)
+          (do (wlr-seat-pointer-notify-enter wlr-seat wlr-surface sx sy)
               (wlr-seat-pointer-notify-motion wlr-seat time sx sy))))))
 
 

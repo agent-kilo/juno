@@ -4,6 +4,13 @@
 
 (use ./util)
 
+#
+# Data fields used here:
+#   wlr-scene-node (tree) data  -> juno view object
+#   wlr-surface data -> juno surface object
+#
+
+
 
 (defn- grab [self mode edges]
   (def server (self :server))
@@ -59,7 +66,7 @@
 
 
 (defn- request-move [self data]
-  (when (:request-move (self :surface))
+  (when (:request-move (self :surface) data)
     (:grab self :move-view [])))
 
 
@@ -95,7 +102,7 @@
     (break))
 
   (if-not (nil? prev-surface)
-    (do (def prev-view (in (pointer-to-table (prev-surface :data)) :view))
+    (do (def prev-view ((pointer-to-table (prev-surface :data)) :view))
         (:set-activated prev-view false)))
 
   (:set-activated self true)
@@ -116,6 +123,7 @@
 (defn- init [self surface scene-tree server]
   (put self :surface surface)
   (put self :scene-tree scene-tree)
+  (set ((scene-tree :node) :data) self)
   (put self :server server)
   (put self :x 0)
   (put self :y 0)
@@ -141,18 +149,15 @@
 
 
 (defn at [server x y]
-  (def [node sx sy] (wlr-scene-node-at (>: server :scene :base :tree :node) x y))
-  (when (or (nil? node) (not (= (node :type) :buffer)))
+  (def [node sx sy] (:get-node-at (server :scene) x y))
+  (when (nil? node)
     (break [nil 0 0]))
 
-  (def scene-buffer (wlr-scene-buffer-from-node node))
-  (def scene-surface (wlr-scene-surface-from-buffer scene-buffer))
-  (when (nil? scene-surface)
+  (var tree (node :parent))
+  (while (and (not (nil? tree)) (nil? (>: tree :node :data)))
+    (set tree (>: tree :node :parent)))
+  (when (nil? tree)
     (break [nil 0 0]))
 
-  (def wlr-surface (scene-surface :surface))
-  (when (or (nil? wlr-surface) (nil? (wlr-surface :data)))
-    (break [nil 0 0]))
-
-  (def surface (pointer-to-table (wlr-surface :data)))
-  [(surface :view) sx sy])
+  (def view (pointer-to-table (>: tree :node :data)))
+  [view sx sy])
