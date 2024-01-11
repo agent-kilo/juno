@@ -56,7 +56,7 @@
 
   (if (= (event :state) :released)
     (:reset-mode cursor)
-    (let [[view _sx _sy] (view/at (cursor :server)
+    (let [[view _sx _sy] (view/at (>: cursor :server :scene)
                                   (>: cursor :base :x)
                                   (>: cursor :base :y))]
       (when (nil? view) (break))
