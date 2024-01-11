@@ -50,6 +50,15 @@
   (wlr-seat-pointer-notify-frame (self :base)))
 
 
+(defn- pointer-axis-event [self time orientation delta delta-discrete source]
+  (wlr-seat-pointer-notify-axis (self :base)
+                                time
+                                orientation
+                                delta
+                                delta-discrete
+                                source))
+
+
 (defn- pointer-enter-event [self surface sx sy]
   (wlr-seat-pointer-notify-enter (self :base) surface sx sy))
 
@@ -102,6 +111,7 @@
   @{:get-pointer-focused-surface get-pointer-focused-surface
     :pointer-button-event pointer-button-event
     :pointer-frame-event pointer-frame-event
+    :pointer-axis-event pointer-axis-event
     :pointer-enter-event pointer-enter-event
     :pointer-motion-event pointer-motion-event
     :pointer-clear-focus pointer-clear-focus

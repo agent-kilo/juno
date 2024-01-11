@@ -65,8 +65,13 @@
 
 
 (defn- handle-axis [cursor listener data]
-  # TODO
-  )
+  (def event (get-abstract-listener-data data 'wlr/wlr-pointer-axis-event))
+  (:pointer-axis-event (>: cursor :server :seat)
+                       (event :time-msec)
+                       (event :orientation)
+                       (event :delta)
+                       (event :delta-discrete)
+                       (event :source)))
 
 
 (defn- handle-frame [cursor listener data]
