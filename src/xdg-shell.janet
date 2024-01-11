@@ -24,7 +24,7 @@
 
 
 (defn- surface-request-move [self event]
-  (def last-btn-event (>: self :xdg-shell :last-pointer-button-event))
+  (def last-btn-event (>: self :xdg-shell :server :cursor :last-button-event))
   (if (nil? last-btn-event)
     false
     (do
@@ -33,7 +33,7 @@
 
 
 (defn- surface-request-resize [self event]
-  (def last-btn-event (>: self :xdg-shell :last-pointer-button-event))
+  (def last-btn-event (>: self :xdg-shell :server :cursor :last-button-event))
   (if (nil? last-btn-event)
     nil
     (do
