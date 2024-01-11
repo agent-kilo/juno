@@ -11,38 +11,13 @@
 #
 
 
-
 (defn- grab [self mode edges]
   (def server (self :server))
   (def cursor (server :cursor))
   (def focused-surface (>: server :seat :base :pointer-state :focused-surface))
-
   (def view-surface (>: self :surface :wlr-surface))
-  (if-not (= view-surface (wlr-surface-get-root-surface focused-surface))
-    (break))
-
-  (put cursor :grabbed-view self)
-  (put cursor :mode mode)
-
-  (case mode
-    :move-view
-    (do
-      (put cursor :grab-x (- (>: cursor :base :x) (self :x)))
-      (put cursor :grab-y (- (>: cursor :base :y) (self :y))))
-
-    :resize-view
-    (do
-      (def geo-box (:get-geometry self))
-      (def border-x (+ (self :x) (geo-box :x)
-                       (if (contains? edges :right) (geo-box :width) 0)))
-      (def border-y (+ (self :y) (geo-box :y)
-                       (if (contains? edges :bottom) (geo-box :height) 0)))
-      (put cursor :grab-x (- (>: cursor :base :x) border-x))
-      (put cursor :grab-y (- (>: cursor :base :y) border-y))
-      (+= (geo-box :x) (self :x))
-      (+= (geo-box :y) (self :y))
-      (put cursor :grab-box geo-box)
-      (put cursor :resize-edges edges))))
+  (if (= view-surface (wlr-surface-get-root-surface focused-surface))
+    (:grab cursor self mode edges)))
 
 
 (defn- map [self]

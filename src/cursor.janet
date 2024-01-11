@@ -185,6 +185,31 @@
           (:pointer-motion-event seat time wlr-surface sx sy)))))
 
 
+(defn- grab [self view mode edges]
+  (put self :grabbed-view view)
+  (put self :mode mode)
+
+  (case mode
+    :move-view
+    (do
+      (put self :grab-x (- (>: self :base :x) (view :x)))
+      (put self :grab-y (- (>: self :base :y) (view :y))))
+
+    :resize-view
+    (do
+      (def geo-box (:get-geometry view))
+      (def border-x (+ (view :x) (geo-box :x)
+                       (if (contains? edges :right) (geo-box :width) 0)))
+      (def border-y (+ (view :y) (geo-box :y)
+                       (if (contains? edges :bottom) (geo-box :height) 0)))
+      (put self :grab-x (- (>: self :base :x) border-x))
+      (put self :grab-y (- (>: self :base :y) border-y))
+      (+= (geo-box :x) (view :x))
+      (+= (geo-box :y) (view :y))
+      (put self :grab-box geo-box)
+      (put self :resize-edges edges))))
+
+
 (defn- reset-mode [self]
   (put self :mode :passthrough)
   (put self :grabbed-view nil))
@@ -197,6 +222,7 @@
 
 (def- proto
   @{:move move
+    :grab grab
     :reset-mode reset-mode
     :destroy destroy})
 
