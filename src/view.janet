@@ -142,8 +142,8 @@
   (init (table/setproto @{} proto) surface scene-tree server))
 
 
-(defn at [server x y]
-  (def [node sx sy] (:get-node-at (server :scene) x y))
+(defn at [scene x y]
+  (def [node sx sy] (:get-node-at scene x y))
   (when (nil? node)
     (break [nil 0 0]))
 
