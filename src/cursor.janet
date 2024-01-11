@@ -28,16 +28,18 @@
 (defn- handle-button [cursor listener data]
   (def event (get-abstract-listener-data data 'wlr/wlr-pointer-button-event))
 
-  (def keyboard (>: cursor :server :seat :base :keyboard-state :keyboard))
-  (def modifiers (if (nil? keyboard)
+  (def wlr-keyboard (:get-keyboard (>: cursor :server :seat)))
+  (def modifiers (if (nil? wlr-keyboard)
                    @[]
-                   (wlr-keyboard-get-modifiers keyboard)))
+                   (wlr-keyboard-get-modifiers wlr-keyboard)))
 
   (when (contains? modifiers :logo)
     (case (event :state)
       :pressed
       (do
-        (def [view _sx _sy] (view/at (cursor :server) (>: cursor :base :x) (>: cursor :base :y)))
+        (def [view _sx _sy] (view/at (>: cursor :server :scene)
+                                     (>: cursor :base :x)
+                                     (>: cursor :base :y)))
         (if-not (nil? view)
           (case (event :button)
             (int/u64 272) (:grab view :move-view [])
