@@ -38,6 +38,10 @@
   self)
 
 
+(defn- get-pointer-focused-surface [self]
+  (>: self :base :pointer-state :focused-surface))
+
+
 (defn- pointer-button-event [self time button state]
   (wlr-seat-pointer-notify-button (self :base) time button state))
 
@@ -95,7 +99,8 @@
 
 
 (def- proto
-  @{:pointer-button-event pointer-button-event
+  @{:get-pointer-focused-surface get-pointer-focused-surface
+    :pointer-button-event pointer-button-event
     :pointer-frame-event pointer-frame-event
     :pointer-enter-event pointer-enter-event
     :pointer-motion-event pointer-motion-event

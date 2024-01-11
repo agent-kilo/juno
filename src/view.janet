@@ -14,7 +14,7 @@
 (defn- grab [self mode edges]
   (def server (self :server))
   (def cursor (server :cursor))
-  (def focused-surface (>: server :seat :base :pointer-state :focused-surface))
+  (def focused-surface (:get-pointer-focused-surface (server :seat)))
   (def view-surface (>: self :surface :wlr-surface))
   (if (= view-surface (wlr-surface-get-root-surface focused-surface))
     (:grab cursor self mode edges)))
