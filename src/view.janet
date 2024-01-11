@@ -104,15 +104,9 @@
   (if-not (nil? prev-surface)
     (do (def prev-view ((pointer-to-table (prev-surface :data)) :view))
         (:set-activated prev-view false)))
-
   (:set-activated self true)
 
-  (def keyboard (wlr-seat-get-keyboard (seat :base)))
-  (if-not (nil? keyboard)
-    (wlr-seat-keyboard-notify-enter (seat :base)
-                                    (surface :wlr-surface)
-                                    (keyboard :keycodes)
-                                    (keyboard :modifiers)))
+  (:keyboard-enter-event seat (surface :wlr-surface))
 
   # Move the view to the front of the list, if it's focusable
   (when (contains? (server :views) self)

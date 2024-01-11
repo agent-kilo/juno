@@ -33,7 +33,7 @@
   (def caps @[:pointer])
   (if-not (empty? (filter |(= (>: $ :device :type) :keyboard) (backend :inputs)))
     (array/push caps :keyboard))
-  (wlr-seat-set-capabilities (>: server :seat :base) caps))
+  (:set-capabilities (server :seat) caps))
 
 
 (defn- init [self server]

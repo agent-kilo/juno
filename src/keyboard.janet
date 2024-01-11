@@ -8,10 +8,7 @@
 
 
 (defn- handle-keyboard-modifiers [keyboard listener data]
-  (def wlr-seat (>: keyboard :server :seat :base))
-  (def wlr-keyboard (keyboard :base))
-  (wlr-seat-set-keyboard wlr-seat wlr-keyboard)
-  (wlr-seat-keyboard-notify-modifiers wlr-seat (wlr-keyboard :modifiers)))
+  (:keyboard-modifiers-event (>: keyboard :server :seat) (keyboard :base)))
 
 
 (defn- do-keybinding [server sym]
@@ -40,7 +37,6 @@
 (defn- handle-keyboard-key [keyboard listener data]
   (def event (get-abstract-listener-data data 'wlr/wlr-keyboard-key-event))
   (def server (keyboard :server))
-  (def wlr-seat (>: server :seat :base))
   (def wlr-keyboard (keyboard :base))
 
   # XXX: Difference from Wayland key codes & xkb key codes
@@ -55,12 +51,11 @@
       (map (fn [_] false) syms)))
 
   (if-not (any? handled-syms)
-    (do
-      (wlr-seat-set-keyboard wlr-seat wlr-keyboard)
-      (wlr-seat-keyboard-notify-key wlr-seat
-                                    (event :time-msec)
-                                    (event :keycode)
-                                    (event :state)))))
+    (:keyboard-key-event (server :seat)
+                         wlr-keyboard
+                         (event :time-msec)
+                         (event :keycode)
+                         (event :state))))
 
 
 (defn- handle-keyboard-destroy [keyboard listener data]
@@ -98,7 +93,7 @@
                     (fn [listener data]
                       (handle-keyboard-destroy self listener data))))
 
-  (wlr-seat-set-keyboard (>: backend :server :seat :base) wlr-keyboard)
+  (:set-keyboard (>: backend :server :seat) wlr-keyboard)
 
   self)
 
