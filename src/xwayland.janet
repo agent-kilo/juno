@@ -3,7 +3,201 @@
 (use janetland/xcb)
 (use janetland/util)
 
+(import ./view)
+
 (use ./util)
+
+
+(defn- surface-map [self])
+(defn- surface-unmap [self])
+
+
+(defn- surface-destroy [self]
+  (eachp [_ listener] (self :listeners)
+    (wl-signal-remove listener)))
+
+
+(defn- surface-request-move [self event]
+  (>: self :base :mapped))
+
+
+(defn- surface-request-resize [self event]
+  (when (>: self :base :mapped)
+    (event :edges)))
+
+
+(defn- surface-get-geometry [self]
+  (box :width (>: self :wlr-surface :current :width)
+       :height (>: self :wlr-surface :current :height)))
+
+
+(defn- surface-move [self x y &opt width height]
+  (if (or (nil? width) (nil? height))
+    (wlr-xwayland-surface-configure (self :base) x y
+                                    (>: self :wlr-surface :current :width)
+                                    (>: self :wlr-surface :current :height))
+    (wlr-xwayland-surface-configure (self :base) x y width height)))
+
+
+(defn- surface-wants-focus [self]
+  (wlr-xwayland-or-surface-wants-focus (self :base)))
+
+
+(defn- surface-set-activated [self activated]
+  (def xw-surface (self :base))
+  (if activated
+    (wlr-xwayland-surface-restack xw-surface nil :above))
+  (wlr-xwayland-surface-activate xw-surface activated))
+
+
+(def- surface-proto
+  @{:map surface-map
+    :unmap surface-unmap
+    :destroy surface-destroy
+    :request-move surface-request-move
+    :request-resize surface-request-resize
+    :get-geometry surface-get-geometry
+    :move surface-move
+    :wants-focus surface-wants-focus
+    :set-activated surface-set-activated})
+
+
+(defn local-coords [xw-surface]
+  (var local-x (xw-surface :x))
+  (var local-y (xw-surface :y))
+  (var xw-parent (xw-surface :parent))
+  (when (not (nil? xw-parent))
+    (-= local-x (xw-parent :x))
+    (-= local-y (xw-parent :y)))
+  [local-x local-y])
+
+
+(defn- scene-surface-create [parent xw-surface]
+  (def tree
+    (if-let [data (xw-surface :data)]
+      # Reuse the node we created when this surface got mapped last time.
+      (pointer-to-abstract-object data 'wlr/wlr-scene-tree)
+      (wlr-scene-tree-create parent)))
+
+  # The subsurface tree will be destroyed when the surface is unmapped,
+  # need to create it again, event if this surface had been mapped before.
+  (def surface-tree (wlr-scene-subsurface-tree-create tree (xw-surface :surface)))
+
+  # Only bind the events when we created a new tree node.
+  (when (nil? (xw-surface :data))
+    (def scene-xw-surface
+      @{:xw-surface xw-surface
+        :tree tree
+        :listeners @{}})
+
+    (put (scene-xw-surface :listeners) :tree-destroy
+       (wl-signal-add (>: tree :node :events.destroy)
+                      (fn [listener data]
+                        (eachp [_ listener] (scene-xw-surface :listeners)
+                          (wl-signal-remove listener)))))
+    (put (scene-xw-surface :listeners) :surface-destroy
+       (wl-signal-add (xw-surface :events.destroy)
+                      (fn [listener data]
+                        (wlr-scene-node-destroy (>: scene-xw-surface :tree :node)))))
+    (put (scene-xw-surface :listeners) :surface-map
+       (wl-signal-add (xw-surface :events.map)
+                      (fn [listener data]
+                        (wlr-scene-node-set-enabled (>: scene-xw-surface :tree :node) true))))
+    (put (scene-xw-surface :listeners) :surface-unmap
+       (wl-signal-add (xw-surface :events.unmap)
+                      (fn [listener data]
+                        (wlr-scene-node-set-enabled (>: scene-xw-surface :tree :node) false)))))
+
+  (wlr-scene-node-set-enabled (tree :node) (xw-surface :mapped))
+  (def [local-x local-y] (local-coords xw-surface))
+  (wlr-scene-node-set-position (tree :node) local-x local-y)
+
+  tree)
+
+
+(defn- new-focusable [surface scene-tree]
+  (def view (view/create surface scene-tree (>: surface :xwayland :server)))
+  (put surface :view view)
+
+  (put (surface :listeners) :unmap
+     (wl-signal-add (>: surface :base :events.unmap)
+                    (fn [listener data]
+                      (:unmap view))))
+
+  (put (surface :listeners) :request_move
+     (wl-signal-add (>: surface :base :events.request_move)
+                    (fn [listener data]
+                      (:request-move view nil))))
+  (put (surface :listeners) :request_resize
+     (wl-signal-add (>: surface :base :events.request_resize)
+                    (fn [listener data]
+                      (def event (get-abstract-listener-data data 'wlr/wlr-xwayland-resize-event))
+                      (:request-resize view event))))
+
+  (:map view))
+
+
+(defn- new-unfocusable [surface scene-tree]
+  # TODO
+  )
+
+
+(defn- handle-surface-map [surface listener data]
+  (put surface :wlr-surface (>: surface :base :surface))
+  (set ((surface :wlr-surface) :data) surface)
+
+  (def xw-surface (surface :base))
+  (def xw-parent (xw-surface :parent))
+  (def parent-tree
+    (if (nil? xw-parent)
+      (>: surface :xwayland :server :scene :base :tree)
+      (pointer-to-abstract-object (xw-parent :data) 'wlr/wlr-scene-tree)))
+  (def scene-tree (scene-surface-create parent-tree xw-surface))
+  (set (xw-surface :data) scene-tree)
+
+  (if (:wants-focus surface)
+    (new-focusable surface scene-tree)
+    (new-unfocusable surface scene-tree)))
+
+
+(defn- handle-surface-request-configure [surface listener data]
+  # Skipping view API, since the surface is not mapped yet
+  (def event (get-abstract-listener-data data 'wlr/wlr-xwayland-surface-configure-event))
+  (def xw-surface (surface :base))
+  (wlr-xwayland-surface-configure xw-surface
+                                  (event :x)
+                                  (event :y)
+                                  (event :width)
+                                  (event :height)))
+
+
+(defn- handle-new-surface [xwayland listener data]
+  (def xw-surface (get-abstract-listener-data data 'wlr/wlr-xwayland-surface))
+  (def surface
+    @{:xwayland xwayland
+      :base xw-surface
+      :wlr-surface nil # unknown at this stage, set in the mapping event
+      :listeners @{}})
+  (table/setproto surface surface-proto)
+
+  # This event happens before mapping
+  (put (surface :listeners) :request_configure
+     (wl-signal-add (>: surface :base :events.request_configure)
+                    (fn [listener data]
+                      (handle-surface-request-configure surface listener data))))
+  # We don't know anything about the X window at this stage, so delay
+  # all other initialization til mapping.
+  (put (surface :listeners) :map
+     (wl-signal-add (>: surface :base :events.map)
+                    (fn [listener data]
+                      (handle-surface-map surface listener data))))
+  # In case the surface is destroyed before mapping
+  (put (surface :listeners) :destroy
+     (wl-signal-add (>: surface :base :events.destroy)
+                    (fn [listener data]
+                      (if-let [view (surface :view)]
+                        (:destroy view)
+                        (:destroy surface))))))
 
 
 (defn- handle-ready [xwayland listener data]
@@ -52,11 +246,6 @@
                            (>: xcursor :images 0 :height)
                            (>: xcursor :images 0 :hotspot-x)
                            (>: xcursor :images 0 :hotspot-y)))
-
-
-(defn- handle-new-surface [xwayland listener data]
-  # TODO
-  )
 
 
 (defn- init [self server]
