@@ -115,33 +115,6 @@
   tree)
 
 
-(defn- new-focusable [surface scene-tree]
-  (def view (view/create surface scene-tree (>: surface :xwayland :server)))
-  (put surface :view view)
-
-  (put (surface :listeners) :unmap
-     (wl-signal-add (>: surface :base :events.unmap)
-                    (fn [listener data]
-                      (:unmap view))))
-
-  (put (surface :listeners) :request_move
-     (wl-signal-add (>: surface :base :events.request_move)
-                    (fn [listener data]
-                      (:request-move view nil))))
-  (put (surface :listeners) :request_resize
-     (wl-signal-add (>: surface :base :events.request_resize)
-                    (fn [listener data]
-                      (def event (get-abstract-listener-data data 'wlr/wlr-xwayland-resize-event))
-                      (:request-resize view event))))
-
-  (:map view))
-
-
-(defn- new-unfocusable [surface scene-tree]
-  # TODO
-  )
-
-
 (defn- handle-surface-map [surface listener data]
   (put surface :wlr-surface (>: surface :base :surface))
   (set ((surface :wlr-surface) :data) surface)
@@ -155,20 +128,37 @@
   (def scene-tree (scene-surface-create parent-tree xw-surface))
   (set (xw-surface :data) scene-tree)
 
-  (if (:wants-focus surface)
-    (new-focusable surface scene-tree)
-    (new-unfocusable surface scene-tree)))
+  (if-not (:wants-focus surface)
+    (break))
+
+  (def view (view/create surface scene-tree (>: surface :xwayland :server)))
+  (put surface :view view)
+
+  (put (surface :listeners) :unmap
+     (wl-signal-add (>: surface :base :events.unmap)
+                    (fn [listener data]
+                      (:unmap view))))
+  (put (surface :listeners) :request_move
+     (wl-signal-add (>: surface :base :events.request_move)
+                    (fn [listener data]
+                      (:request-move view nil))))
+  (put (surface :listeners) :request_resize
+     (wl-signal-add (>: surface :base :events.request_resize)
+                    (fn [listener data]
+                      (def event (get-abstract-listener-data data 'wlr/wlr-xwayland-resize-event))
+                      (:request-resize view event))))
+
+  (:map view))
 
 
 (defn- handle-surface-request-configure [surface listener data]
-  # Skipping view API, since the surface is not mapped yet
   (def event (get-abstract-listener-data data 'wlr/wlr-xwayland-surface-configure-event))
   (def xw-surface (surface :base))
-  (wlr-xwayland-surface-configure xw-surface
-                                  (event :x)
-                                  (event :y)
-                                  (event :width)
-                                  (event :height)))
+  (def view (surface :view))
+  # The surface may not be mapped yet, skip the view API in that case
+  (if-let [view (surface :view)]
+    (:move view (event :x) (event :y) (event :width) (event :height))
+    (:move surface (event :x) (event :y) (event :width) (event :height))))
 
 
 (defn- handle-new-surface [xwayland listener data]
@@ -180,7 +170,7 @@
       :listeners @{}})
   (table/setproto surface surface-proto)
 
-  # This event happens before mapping
+  # This event may happen before mapping
   (put (surface :listeners) :request_configure
      (wl-signal-add (>: surface :base :events.request_configure)
                     (fn [listener data]
@@ -250,7 +240,7 @@
 
 (defn- init [self server]
   # TODO: lazy-load config
-  (def wlr-xwayland (wlr-xwayland-create (>: server :display :base) (server :compositor) false))
+  (def wlr-xwayland (wlr-xwayland-create (>: server :display :base) (server :compositor) true))
 
   (put self :base wlr-xwayland)
   (put self :server server)
