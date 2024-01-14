@@ -62,22 +62,30 @@
     :set-activated surface-set-activated})
 
 
-(defn local-coords [xw-surface]
+#
+# XWayland surfaces use layout coordinates (?), this function
+# converts XWayland surface coordinates to scene node local
+# coordinates (relative to the node's parent).
+#
+(defn- local-coords [xw-surface parent-tree]
   (var local-x (xw-surface :x))
   (var local-y (xw-surface :y))
-  (var xw-parent (xw-surface :parent))
-  (when (not (nil? xw-parent))
-    (-= local-x (xw-parent :x))
-    (-= local-y (xw-parent :y)))
+  (var ptree parent-tree)
+  (while (not (nil? ptree))
+    (-= local-x (>: ptree :node :x))
+    (-= local-y (>: ptree :node :y))
+    (set ptree (>: ptree :node :parent)))
   [local-x local-y])
 
 
 (defn- scene-surface-create [parent xw-surface]
-  (def tree
+  (def [tree parent-tree]
     (if-let [data (xw-surface :data)]
-      # Reuse the node we created when this surface got mapped last time.
-      (pointer-to-abstract-object data 'wlr/wlr-scene-tree)
-      (wlr-scene-tree-create parent)))
+      (do
+        # Reuse the tree we created when this surface got mapped for the first time.
+        (def old-tree (pointer-to-abstract-object data 'wlr/wlr-scene-tree))
+        [old-tree (>: old-tree :node :parent)])
+      [(wlr-scene-tree-create parent) parent]))
 
   # The subsurface tree will be destroyed when the surface is unmapped,
   # need to create it again, event if this surface had been mapped before.
@@ -109,7 +117,7 @@
                         (wlr-scene-node-set-enabled (>: scene-xw-surface :tree :node) false)))))
 
   (wlr-scene-node-set-enabled (tree :node) (xw-surface :mapped))
-  (def [local-x local-y] (local-coords xw-surface))
+  (def [local-x local-y] (local-coords xw-surface parent-tree))
   (wlr-scene-node-set-position (tree :node) local-x local-y)
 
   tree)
