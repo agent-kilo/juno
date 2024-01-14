@@ -2,7 +2,7 @@
 
 (import ./server)
 
-(defn main [&]
+(defn main [& argv]
   # TODO: log level config
   (wlr-log-init :debug)
 
@@ -12,7 +12,9 @@
   (os/sigaction :int (fn [&] (:stop server)))
   (os/sigaction :term (fn [&] (:stop server)))
 
-  (os/spawn ["/bin/sh" "-c" "kitty"] :pd)
+  (when (> (length argv) 1)
+    (def cmd (slice argv 1))
+    (os/spawn ["/bin/sh" "-c" ;cmd] :pd))
 
   (def [stat fiber val] (ev/take server-sup))
   (if-not (= stat :ok)
