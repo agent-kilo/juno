@@ -245,7 +245,9 @@
 
 (defn- init [self server]
   # TODO: lazy-load config
-  (def wlr-xwayland (wlr-xwayland-create (>: server :display :base) (server :compositor) true))
+  # XXX: Setting lazy-load to true and not starting any client on
+  #      startup hangs the startup process????
+  (def wlr-xwayland (wlr-xwayland-create (>: server :display :base) (server :compositor) false))
 
   (put self :base wlr-xwayland)
   (put self :server server)
