@@ -38,4 +38,7 @@
 (declare-executable
  :name "juno"
  :entry "src/main.janet"
+ :deps (->> (os/dir "src")
+            (filter |(string/has-suffix? ".janet" $))
+            (map |(string "src/" $)))
  :cflags [;common-cflags ;wlr-cflags])
