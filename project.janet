@@ -29,7 +29,8 @@
      @["-DWLR_USE_UNSTABLE"]
      (string/split " " (pkg-config "--libs" "wlroots"))
      (string/split " " (pkg-config "--libs" "wayland-server"))
-     (string/split " " (pkg-config "--libs" "xkbcommon")))))
+     (string/split " " (pkg-config "--libs" "xkbcommon"))
+     (string/split " " (pkg-config "--libs" "xcb")))))
 
 (def common-cflags ["-g" "-Wall" "-Wextra"])
 
