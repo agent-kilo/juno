@@ -53,6 +53,14 @@
   (wlr-xwayland-surface-activate xw-surface activated))
 
 
+(defn- surface-set-maximized [self maximized]
+  (wlr-xwayland-surface-set-maximized (self :base) maximized))
+
+
+(defn- surface-set-fullscreen [self fullscreen]
+  (wlr-xwayland-surface-set-fullscreen (self :base) fullscreen))
+
+
 (def- surface-proto
   @{:map surface-map
     :unmap surface-unmap
@@ -62,7 +70,9 @@
     :get-geometry surface-get-geometry
     :move surface-move
     :wants-focus surface-wants-focus
-    :set-activated surface-set-activated})
+    :set-activated surface-set-activated
+    :set-maximized surface-set-maximized
+    :set-fullscreen surface-set-fullscreen})
 
 
 (defn- scene-surface-create [parent xw-surface]

@@ -60,6 +60,14 @@
   (wlr-xdg-toplevel-set-activated (>: self :base :toplevel) activated))
 
 
+(defn- surface-set-maximized [self maximized]
+  (wlr-xdg-toplevel-set-maximized (>: self :base :toplevel) maximized))
+
+
+(defn- surface-set-fullscreen [self fullscreen]
+  (wlr-xdg-toplevel-set-fullscreen (>: self :base :toplevel) fullscreen))
+
+
 (def- surface-proto
   @{:map surface-map
     :unmap surface-unmap
@@ -69,7 +77,9 @@
     :get-geometry surface-get-geometry
     :move surface-move
     :wants-focus surface-wants-focus
-    :set-activated surface-set-activated})
+    :set-activated surface-set-activated
+    :set-maximized surface-set-maximized
+    :set-fullscreen surface-set-fullscreen})
 
 
 (defn- new-popup [xdg-shell xdg-surface]

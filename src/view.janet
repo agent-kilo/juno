@@ -89,6 +89,14 @@
   (:set-activated (self :surface) activated))
 
 
+(defn- set-maximized [self maximized]
+  (:set-maximized (self :surface) maximized))
+
+
+(defn- set-fullscreen [self fullscreen]
+  (:set-fullscreen (self :surface) fullscreen))
+
+
 (defn- focus [self]
   (def server (self :server))
   (def surface (self :surface))
@@ -131,6 +139,8 @@
     :get-geometry get-geometry
     :move move
     :set-activated set-activated
+    :set-maximized set-maximized
+    :set-fullscreen set-fullscreen
     :focus focus
     :grab grab})
 
