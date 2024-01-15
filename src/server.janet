@@ -55,7 +55,8 @@
   (:start (self :backend))
   # Must set these AFTER the backend is started
   (os/setenv "WAYLAND_DISPLAY" (>: self :display :socket))
-  (os/setenv "DISPLAY" (>: self :xwayland :base :display-name))
+  (if-let [xwayland (self :xwayland)]
+    (os/setenv "DISPLAY" (>: xwayland :base :display-name)))
 
   (def sup (ev/chan))
   (ev/go (fn [] (:run self)) nil sup)
@@ -67,7 +68,8 @@
 
 
 (defn- destroy [self]
-  (:destroy (self :xwayland))
+  (if-let [xwayland (self :xwayland)]
+    (:destroy xwayland))
   (wl-display-destroy-clients (>: self :display :base))
   (:destroy (self :display))
   (:stop (self :repl)))
