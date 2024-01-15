@@ -66,7 +66,13 @@
 
 
 (defn- get-geometry [self]
-  (:get-geometry (self :surface)))
+  (def geo-box (:get-geometry (self :surface)))
+  # Coordinates from the surface may be offsetted from the scene node
+  # We always set the coordinates to the same as scene node coordinates
+  # since that's where our view is, conceptually.
+  (set (geo-box :x) (self :x))
+  (set (geo-box :y) (self :y))
+  geo-box)
 
 
 (defn- move [self x y &opt width height]

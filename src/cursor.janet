@@ -203,14 +203,12 @@
     :resize-view
     (do
       (def geo-box (:get-geometry view))
-      (def border-x (+ (view :x) (geo-box :x)
+      (def border-x (+ (geo-box :x)
                        (if (contains? edges :right) (geo-box :width) 0)))
-      (def border-y (+ (view :y) (geo-box :y)
+      (def border-y (+ (geo-box :y)
                        (if (contains? edges :bottom) (geo-box :height) 0)))
       (put self :grab-x (- (>: self :base :x) border-x))
       (put self :grab-y (- (>: self :base :y) border-y))
-      (+= (geo-box :x) (view :x))
-      (+= (geo-box :y) (view :y))
       (put self :grab-box geo-box)
       (put self :resize-edges edges))))
 
