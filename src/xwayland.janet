@@ -32,6 +32,9 @@
 
 
 (defn- surface-move [self x y &opt width height]
+  (when (nil? (self :view))
+    # The surface's not mapped yet, cache the configuration for the mapping event
+    (put self :pending-config [x y]))
   (if (or (nil? width) (nil? height))
     (wlr-xwayland-surface-configure (self :base) x y
                                     (>: self :wlr-surface :current :width)
@@ -140,7 +143,17 @@
                       (def event (get-abstract-listener-data data 'wlr/wlr-xwayland-resize-event))
                       (:request-resize view event))))
 
-  (:map view))
+  (:map view)
+
+  (if-let [pending-config (surface :pending-config)]
+    (do
+      # Received configure request before mapping, restore the cached position
+      # (see surface-move)
+      (put surface :pending-config nil)
+      (def [pending-x pending-y] pending-config)
+      # XXX: Use view API?
+      (put view :x pending-x)
+      (put view :y pending-y))))
 
 
 (defn- handle-surface-request-configure [surface listener data]
