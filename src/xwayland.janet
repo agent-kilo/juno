@@ -62,22 +62,6 @@
     :set-activated surface-set-activated})
 
 
-#
-# XWayland surfaces use layout coordinates (?), this function
-# converts XWayland surface coordinates to scene node local
-# coordinates (relative to the node's parent).
-#
-(defn- local-coords [xw-surface parent-tree]
-  (var local-x (xw-surface :x))
-  (var local-y (xw-surface :y))
-  (var ptree parent-tree)
-  (while (not (nil? ptree))
-    (-= local-x (>: ptree :node :x))
-    (-= local-y (>: ptree :node :y))
-    (set ptree (>: ptree :node :parent)))
-  [local-x local-y])
-
-
 (defn- scene-surface-create [parent xw-surface]
   (def [tree parent-tree]
     (if-let [data (xw-surface :data)]
@@ -117,7 +101,7 @@
                         (wlr-scene-node-set-enabled (>: scene-xw-surface :tree :node) false)))))
 
   (wlr-scene-node-set-enabled (tree :node) (xw-surface :mapped))
-  (def [local-x local-y] (local-coords xw-surface parent-tree))
+  (def [local-x local-y] (view/to-local-coords (xw-surface :x) (xw-surface :y) parent-tree))
   (wlr-scene-node-set-position (tree :node) local-x local-y)
 
   tree)

@@ -11,6 +11,21 @@
 #
 
 
+#
+# Views use layout coordinates, this function converts view
+# coordinates to scene node local coordinates (relative to parent-tree).
+#
+(defn to-local-coords [x y parent-tree]
+  (var local-x x)
+  (var local-y y)
+  (var ptree parent-tree)
+  (while (not (nil? ptree))
+    (-= local-x (>: ptree :node :x))
+    (-= local-y (>: ptree :node :y))
+    (set ptree (>: ptree :node :parent)))
+  [local-x local-y])
+
+
 (defn- grab [self mode edges]
   (def server (self :server))
   (def cursor (server :cursor))
@@ -57,7 +72,8 @@
 (defn- move [self x y &opt width height]
   (put self :x x)
   (put self :y y)
-  (wlr-scene-node-set-position (>: self :scene-tree :node) x y)
+  (def [local-x local-y] (to-local-coords x y (>: self :scene-tree :node :parent)))
+  (wlr-scene-node-set-position (>: self :scene-tree :node) local-x local-y)
   (:move (self :surface) x y width height))
 
 
