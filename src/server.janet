@@ -53,7 +53,7 @@
 (defn- start [self]
   (:start (self :repl))
   (:start (self :backend))
-  # Must set there AFTER the backend is started
+  # Must set these AFTER the backend is started
   (os/setenv "WAYLAND_DISPLAY" (>: self :display :socket))
   (os/setenv "DISPLAY" (>: self :xwayland :base :display-name))
 
