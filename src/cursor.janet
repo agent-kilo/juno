@@ -171,10 +171,9 @@
              (when (<= new-right new-left)
                (set new-right (+ new-left 1)))))
 
-         (def geo-box (:get-geometry view))
          (:move view
-                (math/round (- new-left (geo-box :x)))
-                (math/round (- new-top (geo-box :y)))
+                (math/round new-left)
+                (math/round new-top)
                 (math/round (- new-right new-left))
                 (math/round (- new-bottom new-top))))
 
