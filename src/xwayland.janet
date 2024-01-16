@@ -76,45 +76,26 @@
 
 
 (defn- scene-surface-create [parent xw-surface]
-  (def [tree parent-tree]
-    (if-let [data (xw-surface :data)]
-      (do
-        # Reuse the tree we created when this surface got mapped for the first time.
-        (def old-tree (pointer-to-abstract-object data 'wlr/wlr-scene-tree))
-        [old-tree (>: old-tree :node :parent)])
-      [(wlr-scene-tree-create parent) parent]))
-
-  # The subsurface tree will be destroyed when the surface is unmapped,
-  # need to create it again, event if this surface had been mapped before.
+  (def tree (wlr-scene-tree-create parent))
   (def surface-tree (wlr-scene-subsurface-tree-create tree (xw-surface :surface)))
 
-  # Only bind the events when we created a new tree node.
-  (when (nil? (xw-surface :data))
-    (def scene-xw-surface
-      @{:xw-surface xw-surface
-        :tree tree
-        :listeners @{}})
+  (def listeners @{})
 
-    (put (scene-xw-surface :listeners) :tree-destroy
-       (wl-signal-add (>: tree :node :events.destroy)
-                      (fn [listener data]
-                        (eachp [_ listener] (scene-xw-surface :listeners)
-                          (wl-signal-remove listener)))))
-    (put (scene-xw-surface :listeners) :surface-destroy
-       (wl-signal-add (xw-surface :events.destroy)
-                      (fn [listener data]
-                        (wlr-scene-node-destroy (>: scene-xw-surface :tree :node)))))
-    (put (scene-xw-surface :listeners) :surface-map
-       (wl-signal-add (xw-surface :events.map)
-                      (fn [listener data]
-                        (wlr-scene-node-set-enabled (>: scene-xw-surface :tree :node) true))))
-    (put (scene-xw-surface :listeners) :surface-unmap
-       (wl-signal-add (xw-surface :events.unmap)
-                      (fn [listener data]
-                        (wlr-scene-node-set-enabled (>: scene-xw-surface :tree :node) false)))))
+  (put listeners :tree-destroy
+     (wl-signal-add (>: tree :node :events.destroy)
+                    (fn [listener data]
+                      (eachp [_ listener] listeners
+                        (wl-signal-remove listener)))))
+  # The XWayland surface may be reused in other locations of the scene tree
+  # (e.g tooltips), so we need to destroy the scene node when unmapping, or
+  # there will be stale nodes and memory leaks.
+  (put listeners :surface-unmap
+     (wl-signal-add (xw-surface :events.unmap)
+                    (fn [listener data]
+                      (wlr-scene-node-destroy (tree :node)))))
 
   (wlr-scene-node-set-enabled (tree :node) (xw-surface :mapped))
-  (def [local-x local-y] (view/to-local-coords (xw-surface :x) (xw-surface :y) parent-tree))
+  (def [local-x local-y] (view/to-local-coords (xw-surface :x) (xw-surface :y) parent))
   (wlr-scene-node-set-position (tree :node) local-x local-y)
 
   tree)
