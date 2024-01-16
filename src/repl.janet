@@ -3,6 +3,13 @@
 (use ./util)
 
 
+# All the modules that should be available in the REPL environment.
+(def- repl-env (make-env))
+(merge-module repl-env (require "janetland/wl"))
+(merge-module repl-env (require "janetland/wlr"))
+(merge-module repl-env (require "./util"))
+
+
 (defn- init [self server]
   (put self :server server)
   (put self :path (string "/tmp/" (>: server :display :socket) "-juno-repl.socket"))
@@ -14,17 +21,22 @@
   (put self :repl-server
      (netrepl/server :unix (self :path)
                      (fn [name stream]
-                       (def server-def @{:value (self :server)
-                                         :doc "The global Juno server object.\n"})
-                       (def client-name-def @{:value name
-                                              :doc "The name for the current REPL client.\n"})
-                       (def client-stream-def @{:value stream
-                                                :doc "The socket stream for the current REPL client.\n"})
-                       (def new-env (make-env))
+                       (def server-def
+                         @{:value (self :server)
+                           :doc "The global Juno server object.\n"})
+                       (def client-name-def
+                         @{:value name
+                           :doc "The name for the current REPL client.\n"})
+                       (def client-stream-def
+                         @{:value stream
+                           :doc "The socket stream for the current REPL client.\n"})
+
+                       (def new-env (make-env repl-env))
                        (put new-env 'juno-server server-def)
                        (put new-env 'juno-client-name client-name-def)
                        (put new-env 'juno-client-stream client-stream-def)
-                       (table/setproto @{} new-env))
+
+                       (make-env new-env))
                      nil
                      "Welcome to Juno REPL!\n")))
 
