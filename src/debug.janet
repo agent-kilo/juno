@@ -1,6 +1,8 @@
 (use janetland/wlr)
 (use janetland/util)
 
+(import ./view)
+
 (use ./util)
 
 
@@ -78,22 +80,51 @@
 
 
 (defn dump-scene-node [node]
-  "Show info about the specified wlroots scene node and all its descendants.\n"
+  "Shows info about the specified wlroots scene node and all its descendants.\n"
   (dump-scene-tree-impl node "" "  "))
 
 
 (defn dump-scene-tree [tree]
-  "Show info about the specified wlroots scene tree and all its descendants.\n"
+  "Shows info about the specified wlroots scene tree and all its descendants.\n"
   (dump-scene-node (tree :node)))
 
 
 (defn node-at-cursor [server]
+  "Retrieves the wlroots scene node at current cursor position.\n"
   (def x (>: server :cursor :base :x))
   (def y (>: server :cursor :base :y))
   (:get-node-at (>: server :scene) x y))
 
 
 (defn surface-at-cursor [server]
+  "Retrieves the wlroots surface at current cursor position.\n"
   (def x (>: server :cursor :base :x))
   (def y (>: server :cursor :base :y))
   (:get-surface-at (>: server :scene) x y))
+
+
+(defn view-at-cursor [server]
+  "Retrieves the view object at current cursor position.\n"
+  (def x (>: server :cursor :base :x))
+  (def y (>: server :cursor :base :y))
+  (view/at (server :scene) x y))
+
+
+(defn dump-scene-node-at-cursor [server]
+  "Shows info about the wlroots scene node and all its descendants at current cursor position.\n"
+  (def [node _x _y] (node-at-cursor server))
+  (if (nil? node)
+    (printf "No scene node at (%v, %v)"
+            (>: server :cursor :base :x)
+            (>: server :cursor :base :y))
+    (dump-scene-node node)))
+
+
+(defn dump-scene-tree-at-cursor [server]
+  "Shows info about the wlroots scene tree and all its descendants at current cursor position.\n"
+  (def [view _x _y] (view-at-cursor server))
+  (if (nil? view)
+    (printf "No view at (%v, %v)"
+            (>: server :cursor :base :x)
+            (>: server :cursor :base :y))
+    (dump-scene-tree (view :scene-tree))))

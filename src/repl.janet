@@ -7,6 +7,7 @@
 (def- repl-env (make-env))
 (merge-module repl-env (require "janetland/wl"))
 (merge-module repl-env (require "janetland/wlr"))
+(merge-module repl-env (require "janetland/util"))
 (merge-module repl-env (require "./util"))
 (merge-module repl-env (require "./debug"))
 
