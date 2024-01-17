@@ -65,7 +65,7 @@
     (:grab self :resize-view edges)))
 
 
-(defn- toggle-fill [view mode]
+(defn- toggle-fill [self mode]
   "Maximize a view or put it in fullscreen mode. Mode should be :maximized or :fullscreen"
   (if (self mode)
     (do
