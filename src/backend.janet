@@ -10,7 +10,7 @@
 
 (defn- handle-new-output [backend listener data]
   (def wlr-output (get-abstract-listener-data data 'wlr/wlr-output))
-  (def output (output/create backend wlr-output))
+  (def output (output/create (backend :server) wlr-output))
   (:add-output backend output))
 
 
@@ -75,6 +75,8 @@
 
 
 (defn- add-output [self output]
+  # TODO: output layout config
+  (:add-output-auto (>: self :server :output-layout) output)
   (array/push (self :outputs) output))
 
 

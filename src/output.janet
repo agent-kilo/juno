@@ -16,9 +16,7 @@
   (:remove-output (>: output :server :backend) output))
 
 
-(defn- init [self backend wlr-output]
-  (def server (backend :server))
-
+(defn- init [self server wlr-output]
   (put self :base wlr-output)
   (put self :server server)
   (put self :listeners @{})
@@ -44,10 +42,14 @@
                     (fn [listener data]
                       (handle-output-destroy self listener data))))
 
-  # TODO: output layout config
-  (wlr-output-layout-add-auto (>: server :output-layout :base) wlr-output)
+  (set (wlr-output :data) self)
 
   self)
+
+
+(defn- get-geometry [self]
+  (wlr-output-layout-get-box (>: self :server :output-layout :base)
+                             (self :base)))
 
 
 (defn- destroy [self]
@@ -56,8 +58,9 @@
 
 
 (def- proto
-  @{:destroy destroy})
+  @{:get-geometry get-geometry
+    :destroy destroy})
 
 
-(defn create [backend wlr-output]
-  (init (table/setproto @{} proto) backend wlr-output))
+(defn create [server wlr-output]
+  (init (table/setproto @{} proto) server wlr-output))

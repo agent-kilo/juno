@@ -11,7 +11,19 @@
   self)
 
 
-(def- proto @{})
+(defn- add-output-auto [self output]
+  (wlr-output-layout-add-auto (self :base) (output :base)))
+
+
+(defn- get-output-at [self x y]
+  (def wlr-output (wlr-output-layout-output-at (self :base) x y))
+  (if-not (nil? wlr-output)
+    (pointer-to-table (wlr-output :data))))
+
+
+(def- proto
+  @{:add-output-auto add-output-auto
+    :get-output-at get-output-at})
 
 
 (defn create [server]
