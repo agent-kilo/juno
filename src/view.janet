@@ -65,6 +65,30 @@
     (:grab self :resize-view edges)))
 
 
+(defn- request-maximize [self]
+  (if (self :maximized)
+    (do
+      (:fill-box self (self :maximized))
+      (:set-maximized self false)
+      (put self :maximized false))
+    (do
+      (put self :maximized (:get-geometry self))
+      (:set-maximized self true)
+      (:fill-current-output self))))
+
+
+(defn- request-fullscreen [self]
+  (if (self :fullscreen)
+    (do
+      (:fill-box self (self :fullscreen))
+      (:set-fullscreen self false)
+      (put self :fullscreen false))
+    (do
+      (put self :fullscreen (:get-geometry self))
+      (:set-fullscreen self true)
+      (:fill-current-output self))))
+
+
 (defn- get-geometry [self]
   (def geo-box (:get-geometry (self :surface)))
   # Coordinates from the surface may be offsetted from the scene node
@@ -148,6 +172,8 @@
     :destroy destroy
     :request-move request-move
     :request-resize request-resize
+    :request-maximize request-maximize
+    :request-fullscreen request-fullscreen
     :get-geometry get-geometry
     :move move
     :set-activated set-activated

@@ -126,7 +126,16 @@
      (wl-signal-add (>: surface :base :toplevel :events.request_resize)
                     (fn [listener data]
                       (def event (get-abstract-listener-data data 'wlr/wlr-xdg-toplevel-resize-event))
-                      (:request-resize view event)))))
+                      (:request-resize view event))))
+
+  (put (surface :listeners) :request_maximize
+     (wl-signal-add (>: surface :base :toplevel :events.request_maximize)
+                    (fn [listener data]
+                      (:request-maximize view))))
+  (put (surface :listeners) :request_fullscreen
+     (wl-signal-add (>: surface :base :toplevel :events.request_fullscreen)
+                    (fn [listener data]
+                      (:request-fullscreen view)))))
 
 
 (defn- handle-new-surface [xdg-shell listener data]
