@@ -4,6 +4,7 @@
 (import ./display)
 (import ./backend)
 (import ./renderer)
+(import ./output-layout)
 (import ./scene)
 (import ./xdg-shell)
 (import ./xwayland)
@@ -22,7 +23,7 @@
   (put self :compositor (wlr-compositor-create (>: self :display :base) (>: self :renderer :base)))
   (put self :subcompositor (wlr-subcompositor-create (>: self :display :base)))
   (put self :data-device-manager (wlr-data-device-manager-create (>: self :display :base)))
-  (put self :output-layout (wlr-output-layout-create))
+  (put self :output-layout (output-layout/create self))
   (put self :scene (scene/create self))
 
   (put self :views @[])

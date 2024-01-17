@@ -96,7 +96,8 @@
   (if-not (wlr-xcursor-manager-load (self :xcursor-manager) 1)
     (error "wlr-xcursor-manager-load failed"))
 
-  (wlr-cursor-attach-output-layout (self :base) (server :output-layout))
+  (wlr-cursor-attach-output-layout (self :base)
+                                   (>: server :output-layout :base))
 
   (put (self :listeners) :motion
      (wl-signal-add (>: self :base :events.motion)

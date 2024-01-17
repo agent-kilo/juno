@@ -10,7 +10,8 @@
   (put self :base wlr-scene)
   (put self :server server)
 
-  (if-not (wlr-scene-attach-output-layout (self :base) (server :output-layout))
+  (if-not (wlr-scene-attach-output-layout (self :base)
+                                          (>: server :output-layout :base))
     (error "wlr-scene-attach-output-layout failed"))
 
   self)

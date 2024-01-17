@@ -45,7 +45,7 @@
                       (handle-output-destroy self listener data))))
 
   # TODO: output layout config
-  (wlr-output-layout-add-auto (server :output-layout) wlr-output)
+  (wlr-output-layout-add-auto (>: server :output-layout :base) wlr-output)
 
   self)
 
