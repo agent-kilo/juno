@@ -124,6 +124,7 @@
      (wl-signal-add (>: surface :base :events.unmap)
                     (fn [listener data]
                       (:unmap view))))
+
   (put (surface :listeners) :request_move
      (wl-signal-add (>: surface :base :events.request_move)
                     (fn [listener data]
@@ -133,6 +134,15 @@
                     (fn [listener data]
                       (def event (get-abstract-listener-data data 'wlr/wlr-xwayland-resize-event))
                       (:request-resize view event))))
+
+  (put (surface :listeners) :request_maximize
+     (wl-signal-add (>: surface :base :events.request_maximize)
+                    (fn [listener data]
+                      (:request-maximize view))))
+  (put (surface :listeners) :request_fullscreen
+     (wl-signal-add (>: surface :base :events.request_fullscreen)
+                    (fn [listener data]
+                      (:request-fullscreen view))))
 
   (:map view)
 
