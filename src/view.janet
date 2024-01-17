@@ -97,6 +97,18 @@
   (:set-fullscreen (self :surface) fullscreen))
 
 
+(defn- fill-box [self box]
+  (:move self (box :x) (box :y) (box :width) (box :height)))
+
+
+(defn- fill-current-output [self]
+  (def geo (:get-geometry self))
+  (def center-x (+ (geo :x) (/ (geo :width) 2)))
+  (def center-y (+ (geo :y) (/ (geo :height) 2)))
+  (def output (:get-output-at (>: self :server :output-layout) center-x center-y))
+  (:fill-box self (:get-geometry output)))
+
+
 (defn- focus [self]
   (def server (self :server))
   (def surface (self :surface))
@@ -141,6 +153,8 @@
     :set-activated set-activated
     :set-maximized set-maximized
     :set-fullscreen set-fullscreen
+    :fill-box fill-box
+    :fill-current-output fill-current-output
     :focus focus
     :grab grab})
 
