@@ -73,9 +73,10 @@
       ((keyword (string "set-" mode)) self false)
       (put self mode false))
     (do
-      (put self mode (:get-geometry self))
+      (def old-geo (:get-geometry self))
+      (:fill-current-output self)
       ((keyword (string "set-" mode)) self true)
-      (:fill-current-output self))))
+      (put self mode old-geo))))
 
 
 (defn- request-maximize [self]
