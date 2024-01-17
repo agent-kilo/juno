@@ -65,28 +65,25 @@
     (:grab self :resize-view edges)))
 
 
-(defn- request-maximize [self]
-  (if (self :maximized)
+(defn- toggle-fill [view mode]
+  "Maximize a view or put it in fullscreen mode. Mode should be :maximized or :fullscreen"
+  (if (self mode)
     (do
-      (:fill-box self (self :maximized))
-      (:set-maximized self false)
-      (put self :maximized false))
+      (:fill-box self (self mode))
+      ((keyword (string "set-" mode)) self false)
+      (put self mode false))
     (do
-      (put self :maximized (:get-geometry self))
-      (:set-maximized self true)
+      (put self mode (:get-geometry self))
+      ((keyword (string "set-" mode)) self true)
       (:fill-current-output self))))
+
+
+(defn- request-maximize [self]
+  (toggle-fill self :maximized))
 
 
 (defn- request-fullscreen [self]
-  (if (self :fullscreen)
-    (do
-      (:fill-box self (self :fullscreen))
-      (:set-fullscreen self false)
-      (put self :fullscreen false))
-    (do
-      (put self :fullscreen (:get-geometry self))
-      (:set-fullscreen self true)
-      (:fill-current-output self))))
+  (toggle-fill self :fullscreen))
 
 
 (defn- get-geometry [self]
@@ -162,6 +159,8 @@
   (put self :server server)
   (put self :x 0)
   (put self :y 0)
+  (put self :maximized false)
+  (put self :fullscreen false)
   (put surface :view self)
   self)
 
@@ -174,6 +173,7 @@
     :request-resize request-resize
     :request-maximize request-maximize
     :request-fullscreen request-fullscreen
+    :toggle-fill toggle-fill
     :get-geometry get-geometry
     :move move
     :set-activated set-activated
