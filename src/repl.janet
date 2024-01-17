@@ -8,6 +8,7 @@
 (merge-module repl-env (require "janetland/wl"))
 (merge-module repl-env (require "janetland/wlr"))
 (merge-module repl-env (require "./util"))
+(merge-module repl-env (require "./debug"))
 
 
 (defn- init [self server]
