@@ -267,8 +267,7 @@
 
 
 (defn- destroy [self]
-  (eachp [_ listener] (self :listeners)
-    (wl-signal-remove listener))
+  (remove-listeners (self :listeners))
   (wlr-xwayland-destroy (self :base)))
 
 
