@@ -219,8 +219,7 @@
 
 
 (defn- destroy [self]
-  (eachp [_ listener] (self :listeners)
-    (wl-signal-remove listener)))
+  (wlr-cursor-destroy (self :base)))
 
 
 (def- proto
