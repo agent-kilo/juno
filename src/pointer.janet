@@ -5,7 +5,7 @@
 
 
 (defn- handle-pointer-destroy [pointer listener data]
-  (:destroy pointer)
+  (remove-listeners (pointer :listeners))
   (:remove-input (>: pointer :server :backend) pointer))
 
 
@@ -24,13 +24,7 @@
   self)
 
 
-(defn- destroy [self]
-  (eachp [_ listener] (self :listeners)
-    (wl-signal-remove listener)))
-
-
-(def- proto
-  @{:destroy destroy})
+(def- proto @{})
 
 
 (defn create [backend device]
