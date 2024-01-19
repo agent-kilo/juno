@@ -8,6 +8,13 @@
 (use ./util)
 
 
+################## vvvv Event handlers below vvvv ##################
+#
+# These methods do not TRIGGER the events, they HANDLE
+# the events. They are named after the event names for
+# brevity.
+#
+
 (defn- surface-map [self])
 (defn- surface-unmap [self])
 
@@ -24,6 +31,8 @@
 (defn- surface-request-resize [self event]
   (when (>: self :base :mapped)
     (event :edges)))
+
+################## ^^^^ Event handlers above ^^^^ ##################
 
 
 (defn- surface-get-geometry [self]

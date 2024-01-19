@@ -35,6 +35,27 @@
     (:grab cursor self mode edges)))
 
 
+(defn- toggle-fill [self mode]
+  "Maximize a view or put it in fullscreen mode. Mode should be :maximized or :fullscreen"
+  (if (self mode)
+    (do
+      (:fill-box self (self mode))
+      ((keyword (string "set-" mode)) self false)
+      (put self mode false))
+    (do
+      (def old-geo (:get-geometry self))
+      (:fill-current-output self)
+      ((keyword (string "set-" mode)) self true)
+      (put self mode old-geo))))
+
+
+################## vvvv Event handlers below vvvv ##################
+#
+# These methods do not TRIGGER the events, they HANDLE
+# the events. They are named after the event names for
+# brevity.
+#
+
 (defn- map [self]
   (array/push (>: self :server :views) self)
   (:map (self :surface))
@@ -65,26 +86,14 @@
     (:grab self :resize-view edges)))
 
 
-(defn- toggle-fill [self mode]
-  "Maximize a view or put it in fullscreen mode. Mode should be :maximized or :fullscreen"
-  (if (self mode)
-    (do
-      (:fill-box self (self mode))
-      ((keyword (string "set-" mode)) self false)
-      (put self mode false))
-    (do
-      (def old-geo (:get-geometry self))
-      (:fill-current-output self)
-      ((keyword (string "set-" mode)) self true)
-      (put self mode old-geo))))
-
-
 (defn- request-maximize [self]
-  (toggle-fill self :maximized))
+  (:toggle-fill self :maximized))
 
 
 (defn- request-fullscreen [self]
-  (toggle-fill self :fullscreen))
+  (:toggle-fill self :fullscreen))
+
+################## ^^^^ Event handlers above ^^^^ ##################
 
 
 (defn- get-geometry [self]

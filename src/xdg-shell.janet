@@ -13,6 +13,13 @@
 #
 
 
+################## vvvv Event handlers below vvvv ##################
+#
+# These methods do not TRIGGER the events, they HANDLE
+# the events. They are named after the event names for
+# brevity.
+#
+
 # Placeholders. Xdg surfaces don't really need these.
 (defn- surface-map [self])
 (defn- surface-unmap [self])
@@ -40,6 +47,8 @@
       (def [last-serial last-state _] last-btn-event)
       (when (and (= last-serial (event :serial)) (= last-state :pressed))
         (event :edges)))))
+
+################## ^^^^ Event handlers above ^^^^ ##################
 
 
 (defn- surface-get-geometry [self]
