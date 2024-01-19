@@ -159,17 +159,15 @@
      (wl-signal-add (>: self :base :events.new_surface)
                     (fn [listener data]
                       (handle-new-surface self listener data))))
+  (put (self :listeners) :destroy
+     (wl-signal-add (>: self :base :events.destroy)
+                    (fn [listener data]
+                      (remove-listeners (self :listeners)))))
 
   self)
 
 
-(defn- destroy [self]
-  (eachp [_ listener] (self :listeners)
-    (wl-signal-remove listener)))
-
-
-(def- proto
-  @{:destroy destroy})
+(def- proto @{})
 
 
 (defn create [server]
