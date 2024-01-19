@@ -34,6 +34,10 @@
      (wl-signal-add (>: self :base :events.request_set_selection)
                     (fn [listener data]
                       (handle-request-set-selection self listener data))))
+  (put (self :listeners) :destroy
+     (wl-signal-add (>: self :base :events.destroy)
+                    (fn [listener data]
+                      (remove-listeners (self :listeners)))))
 
   self)
 
@@ -103,8 +107,7 @@
 
 
 (defn- destroy [self]
-  (eachp [_ listener] (self :listeners)
-    (wl-signal-remove listener)))
+  (wlr-seat-destroy (self :base)))
 
 
 (def- proto
