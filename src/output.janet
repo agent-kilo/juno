@@ -12,7 +12,7 @@
 
 
 (defn- handle-output-destroy [output listener data]
-  (:destroy output)
+  (remove-listeners (output :listeners))
   (:remove-output (>: output :server :backend) output))
 
 
@@ -53,8 +53,7 @@
 
 
 (defn- destroy [self]
-  (eachp [_ listener] (self :listeners)
-    (wl-signal-remove listener)))
+  (wlr-output-destroy (self :base)))
 
 
 (def- proto
