@@ -59,7 +59,7 @@
 
 
 (defn- handle-keyboard-destroy [keyboard listener data]
-  (:destroy keyboard)
+  (remove-listeners (keyboard :listeners))
   (:remove-input (>: keyboard :server :backend) keyboard))
 
 
@@ -98,13 +98,7 @@
   self)
 
 
-(defn- destroy [self]
-  (eachp [_ listener] (self :listeners)
-    (wl-signal-remove listener)))
-
-
-(def- proto
-  @{:destroy destroy})
+(def- proto @{})
 
 
 (defn create [backend device]
