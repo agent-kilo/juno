@@ -9,11 +9,13 @@ It's basically [TinyWL](https://gitlab.freedesktop.org/wlroots/wlroots/-/tree/ma
 ## Dependencies ##
 
 * Janetland
+* Spork
 * pkg-config
 * [JPM](https://janet-lang.org/docs/jpm.html)
 
 ## Compiling ##
 
 1. Build Janetland and install it into Juno's local `jpm_tree`.
-2. Run `jpm -l build`.
-3. Check out the executable in `build/`
+2. Run `jpm -l install spork`
+3. Run `jpm -l build`.
+4. Check out the executable in `build/`
